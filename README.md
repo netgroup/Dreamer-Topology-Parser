@@ -40,6 +40,8 @@ Example of using TopoParser and Validator
 			for l2subnet in l2subnets:
 					links = l2subnet.getOrderedLinks()
 					print "*** Subnet: Node %s - Links %s" %(l2subnet.nodes, links)
+			print "*** VLLs",parser.getVLLs()
+			print "*** Tunneling", parser.tunneling
 
 TODO
 ======
