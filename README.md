@@ -43,8 +43,8 @@ Example of usage TopoParser and Validator
 			# Retrieve the nodes
 			oshis = parser.oshis
 			aoshis = parser.aoshis
-			oshis = parser.oshis
-			oshis = parser.oshis
+			l2sws = parser.l2sws
+			euhs = parser.euhs
 			# Retrieve the links from each subnet
 			for ppsubnet in ppsubnets:
 					links = ppsubnet.links()
