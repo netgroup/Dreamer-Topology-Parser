@@ -33,15 +33,15 @@ from topo_parser_utils import Subnet
 
 class TopoParser:
 	
-	path = "../testbed_deployer/topo/"
+	path = ""
 	
 	# Init Function, load json_data from path_json
 	def __init__(self, path_json, verbose=False):
 		self.verbose = verbose
-		self.oshis = []
-		self.aoshis = []
+		self.cr_oshis = []
+		self.pe_oshis = []
 		self.l2sws = []
-		self.euhs = []
+		self.cers = []
 		self.vlls = []
 		self.pplinks = []
 		self.l2links = []
@@ -105,22 +105,22 @@ class TopoParser:
 		vertices = self.json_data['vertices']
 		edges = self.json_data['edges']
 		for vertex in vertices:
-			if 'COSH' in vertex:
+			if 'CROSHI' in vertex:
 				data = vertex.split('#')
-				name = "osh" + str(len(self.oshis) + len(self.aoshis) + 1)
-				self.oshis.append(name) 
-			elif 'AOSH' in vertex:
+				name = "cro" + str(len(self.cr_oshis) + len(self.pe_oshis) + 1)
+				self.cr_oshis.append(name) 
+			elif 'PEOSHI' in vertex:
 				data = vertex.split('#')
-				name = "aos" + str(len(self.oshis) + len(self.aoshis) + 1)
-				self.aoshis.append(name)
-			elif 'L2SW' in vertex:
+				name = "peo" + str(len(self.cr_oshis) + len(self.pe_oshis) + 1)
+				self.pe_oshis.append(name)
+			elif 'SWI' in vertex:
 				data = vertex.split('#')
-				name = "l2sw" + str(len(self.l2sws) + 1)
+				name = "swi" + str(len(self.l2sws) + 1)
 				self.l2sws.append(name)
-			elif 'EUH' in vertex:
+			elif 'CER' in vertex:
 				data = vertex.split('#')
-				name = "euh" + str(len(self.euhs) + 1)
-				self.euhs.append(name)
+				name = "cer" + str(len(self.cers) + 1)
+				self.cers.append(name)
 			for edge in edges:
 				i = 0
 				for side in edge:
@@ -128,10 +128,10 @@ class TopoParser:
 						edge[i] = name
 					i = i + 1
 		if self.verbose:		
-			print "*** OSHI:", self.oshis
-			print "*** AOSHI:", self.aoshis
+			print "*** CROSHI:", self.cr_oshis
+			print "*** PEOSHI:", self.pe_oshis
 			print "*** L2SW:", self.l2sws
-			print "*** EUH:", self.euhs
+			print "*** CER:", self.cers
 
 	# Parses link from json_data, then divides them in L2Links (Switched Links)
 	# and PPLinks (Point To Point Links)
@@ -144,7 +144,7 @@ class TopoParser:
 			multilinks = edge[2]
 			for link in multilinks:
 				if link['vll'] == False:
-					if 'sw' in edge[0] or 'sw' in edge[1]:
+					if 'swi' in edge[0] or 'swi' in edge[1]:
 						self.l2links.append((edge[0], edge[1], link))
 					else:
 						self.pplinks.append((edge[0], edge[1], link))
@@ -200,7 +200,7 @@ class TopoParser:
 		ret_links = []
 		ret_node = []
 		tmp = []
-		if 'euh' in node or 'aos' in node or 'osh' in node:
+		if 'cer' in node or 'peo' in node or 'cro' in node:
 			return ([],[])
 		for link in self.l2links:
 			if link[0] == node or link[1] == node:
@@ -216,15 +216,15 @@ class TopoParser:
 
 if __name__ == '__main__':
 
-	parser = TopoParser("topo3.json", verbose = False)
+	parser = TopoParser("../Dreamer-Mininet-Extensions/topo/topo.json", verbose = True)
 	(ppsubnets, l2subnets) = parser.getsubnets()
 	print "*** Networks Point To Point"
 	for ppsubnet in ppsubnets:
-			links = ppsubnet.getOrderedLinks()
+			links = ppsubnet.links
 			print "*** Subnet: Node %s - Links %s" %(ppsubnet.nodes, links)
 	print "*** Switched Networks"
 	for l2subnet in l2subnets:
-			links = l2subnet.getOrderedLinks()
+			links = l2subnet.links
 			print "*** Subnet: Node %s - Links %s" %(l2subnet.nodes, links)
 	print "*** VLLs",parser.getVLLs()
 	print "*** Tunneling", parser.tunneling
