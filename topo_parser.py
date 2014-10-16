@@ -30,10 +30,12 @@ import os
 import json
 import sys
 from topo_parser_utils import Subnet
+import re
 
 class TopoParser:
 	
 	path = ""
+
 	
 	# Init Function, load json_data from path_json
 	def __init__(self, path_json, verbose=False):
@@ -86,7 +88,7 @@ class TopoParser:
 	def load_advanced(self):
 		if self.verbose:
 			print "*** Retrieve Advanced Option"
-		advanced_options = self.json_data['advanced']
+		advanced_options = self.json_data['graph_parameters']
 		if 'tunneling' not in advanced_options:
 			print "*** Error No Tunneling Data"
 			sys.exit(-2)
@@ -105,28 +107,36 @@ class TopoParser:
 		vertices = self.json_data['vertices']
 		edges = self.json_data['edges']
 		for vertex in vertices:
-			if 'CROSHI' in vertex:
-				data = vertex.split('#')
-				name = "cro" + str(len(self.cr_oshis) + len(self.pe_oshis) + 1)
-				self.cr_oshis.append(name) 
-			elif 'PEOSHI' in vertex:
-				data = vertex.split('#')
-				name = "peo" + str(len(self.cr_oshis) + len(self.pe_oshis) + 1)
-				self.pe_oshis.append(name)
-			elif 'SWI' in vertex:
-				data = vertex.split('#')
-				name = "swi" + str(len(self.l2sws) + 1)
-				self.l2sws.append(name)
-			elif 'CER' in vertex:
-				data = vertex.split('#')
-				name = "cer" + str(len(self.cers) + 1)
-				self.cers.append(name)
-			for edge in edges:
-				i = 0
-				for side in edge:
-					if vertex in side:
-						edge[i] = name
-					i = i + 1
+			
+			curvtype = vertices[vertex]['vertex_info']['node-type']
+			#r'cro\d+$'
+			
+
+			if 'OSHI-CR' in curvtype:
+				# data = vertex.split('#')
+				# name = "cro" + data[1] #+ str(len(self.cr_oshis) + len(self.pe_oshis) + 1)
+				number = map(int, re.findall(r'\d+', vertex))
+				self.cr_oshis.append('cro%s' %number[0]) 
+			elif 'OSHI-PE' in curvtype:
+				# data = vertex.split('#')
+				# name = "peo" + data[1] # + str(len(self.cr_oshis) + len(self.pe_oshis) + 1)
+				number =  map(int, re.findall(r'\d+', vertex))
+				self.pe_oshis.append('peo%s' %number[0])
+			# elif 'SWI' in curvtype:
+			# 	data = vertex.split('#')
+			# 	name = "swi"  + data[1] # + str(len(self.l2sws) + 1)
+			# 	self.l2sws.append(name)
+			elif 'CE' in curvtype:
+				# data = vertex.split('#')
+				# name = "cer" + data[1] # str(len(self.cers) + 1)
+				number =  map(int, re.findall(r'\d+', vertex))
+				self.cers.append('cer%s' %number[0])
+			# for edge in edges:
+			# 	i = 0
+			# 	for side in edge:
+			# 		if vertex in side:
+			# 			edge[i] = name
+			# 		i = i + 1
 		if self.verbose:		
 			print "*** CROSHI:", self.cr_oshis
 			print "*** PEOSHI:", self.pe_oshis
@@ -141,15 +151,22 @@ class TopoParser:
 			print "*** Retrieve Links"
 		edges = self.json_data['edges']
 		for edge in edges:
-			multilinks = edge[2]
-			for link in multilinks:
-				if link['vll'] == False:
-					if 'swi' in edge[0] or 'swi' in edge[1]:
-						self.l2links.append((edge[0], edge[1], link))
-					else:
-						self.pplinks.append((edge[0], edge[1], link))
+			vertids = edge.split('&&')
+			for link in edges[edge]['links']:
+				print link
+				if link['link-type'] == 'Vll':
+					self.vlls.append((vertids[0],vertids[1], link))
 				else:
-						self.vlls.append((edge[0], edge[1], link))
+					self.pplinks.append((vertids[0],vertids[1], link))
+			# multilinks = edge[2]
+			# for link in multilinks:
+			# 	if link['vll'] == False:
+			# 		if 'swi' in edge[0] or 'swi' in edge[1]:
+			# 			self.l2links.append((edge[0], edge[1], link))
+			# 		else:
+			# 			self.pplinks.append((edge[0], edge[1], link))
+			# 	else:
+			# 			self.vlls.append((edge[0], edge[1], link))
 		if self.verbose:
 			print "*** L2links:", self.l2links
 			print "*** PPlinks:", self.pplinks
@@ -172,20 +189,20 @@ class TopoParser:
 				print "*** PP Subnet(%s): Nodes %s - Links %s" %(i + 1, subnet.nodes, subnet.links)
 				i = i + 1
 		# Creates the l2subnets
-		tmp = []
-		for sw in self.l2sws:
-			tmp.append(sw)
-			s = self.subnetclass()
-			while len(tmp) > 0:
-				current = tmp[0]
-				tmp.pop(0)
-				(hops, links) = self.getNextHopAndLinks(current)
-				for hop in hops:
-					tmp.append(hop)
-				for link in links:
-					s.appendLink(link)
-			if len(s.links) > 0:
-				self.l2subnets.append(s)	
+		# tmp = []
+		# for sw in self.l2sws:
+		# 	tmp.append(sw)
+		# 	s = self.subnetclass()
+		# 	while len(tmp) > 0:
+		# 		current = tmp[0]
+		# 		tmp.pop(0)
+		# 		(hops, links) = self.getNextHopAndLinks(current)
+		# 		for hop in hops:
+		# 			tmp.append(hop)
+		# 		for link in links:
+		# 			s.appendLink(link)
+		# 	if len(s.links) > 0:
+		# 		self.l2subnets.append(s)	
 		if self.verbose:
 			i = 0
 			print "*** Subnets:"
@@ -216,7 +233,11 @@ class TopoParser:
 
 if __name__ == '__main__':
 
-	parser = TopoParser("../Dreamer-Mininet-Extensions/topo/topo.json", verbose = True)
+	parser = TopoParser("../Dreamer-Mininet-Extensions/topo/new_topo.json", verbose = True)
+	# parser.load_vertex()
+	# parser.load_advanced()
+	# parser.load_links()
+	# parser.create_subnet()
 	(ppsubnets, l2subnets) = parser.getsubnets()
 	print "*** Networks Point To Point"
 	for ppsubnet in ppsubnets:
