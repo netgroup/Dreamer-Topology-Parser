@@ -51,6 +51,7 @@ class TopoParser:
 		self.ctrls = []
 		self.ctrls_properties = []
 		self.vlls = []
+		self.pws = []
 		self.pplinks = []
 		self.l2links = []
 		self.ppsubnets = []
@@ -93,6 +94,11 @@ class TopoParser:
 		if self.parsed == False:
 			self.parse_data()
 		return self.vlls
+
+	def getPWs(self):
+		if self.parsed == False:
+			self.parse_data()
+		return self.pws
 
 	def load_advanced(self):
 		if self.verbose:
@@ -184,6 +190,8 @@ class TopoParser:
 			for link in edges[edge]['links']:
 				if link['link-type'] == 'Vll':
 					self.vlls.append((vertids[0],vertids[1], link))
+				elif link['link-type'] == 'Pw':
+					self.pws.append((vertids[0],vertids[1], link))
 				else:
 					self.pplinks.append((vertids[0],vertids[1], link))
 
@@ -239,8 +247,17 @@ class TopoParser:
 
 if __name__ == '__main__':
 
-	parser = TopoParser("../testbed_deployer/topo/newtopo.json", verbose = True)
+	parser = TopoParser("../Dreamer-Mininet-Extensions/topo/topo_vll.json", verbose = False)
 	(ppsubnets, l2subnets) = parser.getsubnets()
+	print "*** Nodes:"
+	for cr, cr_property in zip(parser.cr_oshis, parser.cr_oshis_properties):
+		print "*** CR: %s - Property: %s" %(cr, cr_property)
+	for pe, pe_property in zip(parser.pe_oshis, parser.pe_oshis_properties):
+		print "*** PE: %s - Property: %s" %(pe, pe_property)
+	for cer, cer_property in zip(parser.cers, parser.cers_properties):
+		print "*** CER: %s - Property: %s" %(cer, cer_property)
+	for ctrl, ctrl_property in zip(parser.ctrls, parser.ctrls_properties):
+		print "*** CTRL: %s - Property: %s" %(ctrl, ctrl_property)
 	print "*** Networks Point To Point"
 	for ppsubnet in ppsubnets:
 			links = ppsubnet.links
@@ -250,6 +267,7 @@ if __name__ == '__main__':
 			links = l2subnet.links
 			print "*** Subnet: Node %s - Links %s" %(l2subnet.nodes, links)
 	print "*** VLLs",parser.getVLLs()
+	print "*** PWs", parser.getPWs()
 	print "*** Tunneling", parser.tunneling
 	print "*** Testbed", parser.testbed
 	print "*** Mapped", parser.mapped
