@@ -190,7 +190,7 @@ class TopoParser:
 			for link in edges[edge]['links']:
 				if link['link-type'] == 'Vll':
 					self.vlls.append((vertids[0],vertids[1], link))
-				elif link['link-type'] == 'Pw':
+				elif link['link-type'] == 'PW':
 					self.pws.append((vertids[0],vertids[1], link))
 				else:
 					self.pplinks.append((vertids[0],vertids[1], link))
