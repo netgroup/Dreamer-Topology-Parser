@@ -30,7 +30,7 @@ Example of usage TopoParser and Validator
 		if __name__ == '__main__':
 
 				parser = TopoParser("../Dreamer-Mininet-Extensions/topo/topo_vll.json", verbose = False)
-				(ppsubnets, l2subnets) = parser.getsubnets()
+				ppsubnets = parser.getsubnets()
 				print "*** Nodes:"
 				for cr, cr_property in zip(parser.cr_oshis, parser.cr_oshis_properties):
 				        print "*** CR: %s - Property: %s" %(cr, cr_property)
@@ -44,19 +44,14 @@ Example of usage TopoParser and Validator
 				for ppsubnet in ppsubnets:
 				                links = ppsubnet.links
 				                print "*** Subnet: Node %s - Links %s" %(ppsubnet.nodes, links)
-				print "*** Switched Networks"
-				for l2subnet in l2subnets:
-				                links = l2subnet.links
-				                print "*** Subnet: Node %s - Links %s" %(l2subnet.nodes, links)
 				print "*** VLLs",parser.getVLLs()
 				print "*** PWs", parser.getPWs()
+				print "*** VSs", parser.getVSs()
 				print "*** Tunneling", parser.tunneling
 				print "*** Testbed", parser.testbed
 				print "*** Mapped", parser.mapped
 				print "*** Generated", parser.generated
-				print "*** VLAN", parser.vlan
-			
-			
+				print "*** VLAN", parser.vlan		
 
 TODO
 ======

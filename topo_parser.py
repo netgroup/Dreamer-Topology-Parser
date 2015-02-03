@@ -44,18 +44,20 @@ class TopoParser:
 		self.cr_oshis_properties = []
 		self.pe_oshis = []		
 		self.pe_oshis_properties = []
-		self.l2sws = []		
-		self.l2sws_properties = []
+		#self.l2sws = []		
+		#self.l2sws_properties = []
 		self.cers = []
 		self.cers_properties = []
 		self.ctrls = []
 		self.ctrls_properties = []
 		self.vlls = []
 		self.pws = []
+		self.vss = []
+		self.l2vss = []
 		self.pplinks = []
-		self.l2links = []
+		#self.l2links = []
 		self.ppsubnets = []
-		self.l2subnets = []
+		#self.l2subnets = []
 		self.subnetclass = Subnet
 		self.generated = False
 		self.parsed = False
@@ -77,18 +79,19 @@ class TopoParser:
 
 	# Parse Function, first retrieves the vertices from json data,
 	# second retrieves the links from json data, finally create the
-	# subnets (PPsubnet, Core L2Subnet, Access L2Subnet)
+	# PPsubnet
 	def parse_data(self):
 		self.load_advanced()
 		self.load_vertex()
 		self.load_links()
+		self.load_vss()
 		self.create_subnet()
 		self.parsed = True
 	
 	def getsubnets(self):
 		if self.parsed == False:
 			self.parse_data()
-		return (self.ppsubnets, self.l2subnets)
+		return self.ppsubnets #, self.l2subnets)
 
 	def getVLLs(self):
 		if self.parsed == False:
@@ -99,6 +102,11 @@ class TopoParser:
 		if self.parsed == False:
 			self.parse_data()
 		return self.pws
+
+	def getVSs(self):
+		if self.parsed == False:
+			self.parse_data()
+		return self.vss
 
 	def load_advanced(self):
 		if self.verbose:
@@ -141,9 +149,7 @@ class TopoParser:
 		
 
 	# Parses vertex from json_data, renames the node in 'vertices' and in 'edges', 
-	# and divides them in: oshi (Core Oshi), aoshi (Access Oshi), l2sws (Legacy L2 switch)
-	# and euhs (End User Host). 
-	# TODO Parse Nodes Properties
+	# and divides them in: cr - oshi (Core Oshi), pe - oshi (Access Oshi), and cers (Customer Edge Router). 
 	def load_vertex(self):
 		if self.verbose:
 			print "*** Retrieve Vertex"
@@ -172,14 +178,34 @@ class TopoParser:
 				number =  map(int, re.findall(r'\d+', vertex))
 				self.ctrls.append('ctr%s' %number[0])
 				self.ctrls_properties.append(curvproperty)
+			elif 'VS' in curvtype:
+				number =  map(int, re.findall(r'\d+', vertex))
+				self.l2vss.append('vs%s' %number[0])
+
 		if self.verbose:		
 			print "*** CROSHI:", self.cr_oshis
 			print "*** PEOSHI:", self.pe_oshis
 			print "*** CER:", self.cers
 			print "*** CTRL:", self.ctrls
+			print "*** VS:", self.l2vss
 
-	# Parses link from json_data, then divides them in L2Links (Switched Links)
-	# and PPLinks (Point To Point Links)
+	# Parses link from json_data
+	# TODO Parse Links Properties
+	def load_vss(self):
+		if self.verbose:
+			print "*** Retrieve VSs"
+		edges = self.json_data['edges']
+		for l2vs in self.l2vss:
+			vs = []
+			for edge in edges:
+				vertids = edge.split('&&')
+				if l2vs in vertids[0] and vertids[1] not in vs:
+					vs.append(vertids[1])
+				elif l2vs in vertids[1] and vertids[0] not in vs:
+					vs.append(vertids[0])
+			self.vss.append(vs)
+		
+	# Parses link from json_data
 	# TODO Parse Links Properties
 	def load_links(self):
 		if self.verbose:
@@ -192,15 +218,15 @@ class TopoParser:
 					self.vlls.append((vertids[0],vertids[1], link))
 				elif link['link-type'] == 'PW':
 					self.pws.append((vertids[0],vertids[1], link))
-				else:
+				elif link['link-type'] == 'Data':
 					self.pplinks.append((vertids[0],vertids[1], link))
 
 		if self.verbose:
-			print "*** L2links:", self.l2links
+			#print "*** L2links:", self.l2links
 			print "*** PPlinks:", self.pplinks
 			print "*** VLLs:", self.vlls
-	# From the parsed Links, creates the associates Subnet, then divides them in
-	# L2subnet and PPsubnets
+
+	# From the parsed Links, creates the associates Subnet
 	def create_subnet(self):
 		# Creates the ppsubnets
 		for pplink in self.pplinks:
@@ -217,16 +243,19 @@ class TopoParser:
 				print "*** PP Subnet(%s): Nodes %s - Links %s" %(i + 1, subnet.nodes, subnet.links)
 				i = i + 1
 	
+		"""
 		if self.verbose:
 			i = 0
 			print "*** Subnets:"
 			for subnet in self.l2subnets:
 				print "*** L2 Subnet(%s): Nodes %s - Links %s" %(i + 1, subnet.nodes, subnet.links)
 				i = i + 1
+		"""
 
 	# Utility Function, provides node's next hop and links (to the nexthop)
 	# we use it to rebuild from scratch a l2subnets, XXX it deletes the l2links
 	# once we rebuild the subnet
+	"""
 	def getNextHopAndLinks(self,node):
 		ret_links = []
 		ret_node = []
@@ -244,11 +273,12 @@ class TopoParser:
 		for link in tmp:
 			self.l2links.remove(link)
 		return (ret_node, ret_links)
+	"""
 
 if __name__ == '__main__':
 
-	parser = TopoParser("../Dreamer-Mininet-Extensions/topo/topo_vll.json", verbose = False)
-	(ppsubnets, l2subnets) = parser.getsubnets()
+	parser = TopoParser("../Dreamer-Mininet-Extensions/topo/topo_vll_pw_3vs.json", verbose = False)
+	ppsubnets = parser.getsubnets()
 	print "*** Nodes:"
 	for cr, cr_property in zip(parser.cr_oshis, parser.cr_oshis_properties):
 		print "*** CR: %s - Property: %s" %(cr, cr_property)
@@ -262,12 +292,9 @@ if __name__ == '__main__':
 	for ppsubnet in ppsubnets:
 			links = ppsubnet.links
 			print "*** Subnet: Node %s - Links %s" %(ppsubnet.nodes, links)
-	print "*** Switched Networks"
-	for l2subnet in l2subnets:
-			links = l2subnet.links
-			print "*** Subnet: Node %s - Links %s" %(l2subnet.nodes, links)
 	print "*** VLLs",parser.getVLLs()
 	print "*** PWs", parser.getPWs()
+	print "*** VSs", parser.getVSs()
 	print "*** Tunneling", parser.tunneling
 	print "*** Testbed", parser.testbed
 	print "*** Mapped", parser.mapped
