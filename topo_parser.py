@@ -121,7 +121,7 @@ class TopoParser:
 		if 'testbed' not in advanced_options:
 			print "Error No Testbed Data"
 			sys.exit(-2)
-		testbeds=["OFELIA", "GOFF", "MININET"]
+		testbeds=["OFELIA", "GOFF", "GTS", "MININET"]
 		testbed = advanced_options['testbed']
 		if testbed not in testbeds:
 			print "%s Not Supported" % testbed
@@ -157,8 +157,8 @@ class TopoParser:
 		edges = self.json_data['edges']
 		for vertex in vertices:
 			
-			curvtype = vertices[vertex]['vertex_info']['node-type']
-			curvproperty = vertices[vertex]['vertex_info']['property']
+			curvtype = vertices[vertex]['info']['type']
+			curvproperty = vertices[vertex]['info']['property']
 			#r'cro\d+$'
 			
 
@@ -214,11 +214,11 @@ class TopoParser:
 		for edge in edges:
 			vertids = edge.split('&&')
 			for link in edges[edge]['links']:
-				if link['link-type'] == 'Vll':
+				if link['view'] == 'Vll':
 					self.vlls.append((vertids[0],vertids[1], link))
-				elif link['link-type'] == 'PW':
+				elif link['view'] == 'PW':
 					self.pws.append((vertids[0],vertids[1], link))
-				elif link['link-type'] == 'Data':
+				elif link['view'] == 'Data':
 					self.pplinks.append((vertids[0],vertids[1], link))
 
 		if self.verbose:
