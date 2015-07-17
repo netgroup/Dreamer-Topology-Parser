@@ -1,9 +1,9 @@
 ![Alt text](repo_data/dreamer-logo.png "Optional title")
 
-Dreamer-Topology-Parser-and-Validator
+Dreamer-Topology-Parser
 =====================================
 
-Topology Parser and Validator For Dreamer Project (GÉANT Open Call)
+Topology Parser For Dreamer Project (GÉANT Open Call)
 
 Using this tools you can parse and validate the topologies created with
 [Dreamer-Topology-Designer](https://github.com/netgroup/Dreamer-Topology-Designer).
@@ -23,7 +23,7 @@ Tips
 Usage
 =====
 
-Example of usage TopoParser and Validator
+Example of usage TopoParser
 
 #####TopoParser
 
@@ -52,9 +52,3 @@ Example of usage TopoParser and Validator
 				print "*** Mapped", parser.mapped
 				print "*** Generated", parser.generated
 				print "*** VLAN", parser.vlan		
-
-TODO
-======
-
-Validator implementation
-
