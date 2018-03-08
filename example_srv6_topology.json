@@ -1,0 +1,75 @@
+{
+   "edges":[
+      {
+         "source":"ads1",
+         "target":"ads2",
+         "group": "",
+         "view": "Data",
+         "type": "Core"
+      },
+      {
+         "source":"ads1",
+         "target":"sur1",
+         "group": "",
+         "view": "Data",
+         "type": "Core"
+      },
+      {
+         "source":"ads2",
+         "target":"sur1",
+         "group": "",
+         "view": "Data",
+         "type": "Core"
+      }
+   ],
+   "vertices":[
+     {
+      "info": {
+        "type": "Router",
+        "property": {
+           "vnf": 3,
+           "ter": 0,
+           "floating_ip": "172.20.0.1",
+           "internal_ip": "192.168.10.1",
+           "vim": "ADS"
+        },
+        "group": [200]
+      },
+      "id": "ads1"
+     },
+     {
+      "info": {
+        "type": "Router",
+        "property": {
+           "vnf": 0,
+           "ter": 1,
+           "floating_ip": "172.20.0.2",
+           "internal_ip": "192.168.10.2",
+           "vim": "ADS"
+        },
+        "group": [200]
+      },
+      "id": "ads2"
+     },
+     {
+      "info": {
+        "type": "Router",
+        "property": {
+           "vnf": 0,
+           "ter": 1,
+           "floating_ip": "172.20.0.3",
+           "internal_ip": "192.168.10.3",
+           "vim": "SURREY"
+        },
+        "group": [200]
+      },
+      "id": "sur1"
+     }
+   ],
+   "graph_parameters":{
+        "bw": 1,
+        "delay": 1000,
+        "testbed":"SOFTFIRE",
+        "tunneling":"VXLAN"
+     }
+}
