@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 ##############################################################################################
 # Copyright (C) 2017 Pier Luigi Ventre - (University of Rome "Tor Vergata")
 # Copyright (C) 2017 Stefano Salsano - (CNIT and University of Rome "Tor Vergata")
@@ -24,8 +26,6 @@
 # @author Alessandro Masci <mascialessandro89@gmail.com>
 #
 
-# !/usr/bin/python
-
 import os
 import json
 import sys
@@ -34,17 +34,17 @@ import re
 from topo_parser import TopoParser
 
 
-class Srv6TopoParser(TopoParser):
+class SRv6TopoParser(TopoParser):
     path = ""
 
     # Init Function, load json_data from path_json
     def __init__(self, path_json, verbose=False, version=2):
         self.verbose = verbose
         self.version = int(version)
-        self.server = []
-        self.server_properties = []
-        self.router = []
-        self.router_properties = []
+        self.servers = []
+        self.servers_properties = []
+        self.routers = []
+        self.routers_properties = []
         self.edge_links = []
         self.edge_links_properties = []
         self.core_links = []
@@ -77,13 +77,13 @@ class Srv6TopoParser(TopoParser):
     def getRouters(self):
         if self.parsed == False:
             self.parse_data()
-        return self.router
+        return self.routers
 
     # Function used for retrieve servers from json data
     def getServers(self):
         if self.parsed == False:
             self.parse_data()
-        return self.server
+        return self.servers
 
     # Function used for retrieve edge links from json data
     def getEdge(self):
@@ -98,24 +98,39 @@ class Srv6TopoParser(TopoParser):
         return self.core_links
 
     # Function used for retrieve vnf number for each vertices
-    def getVnf(self,id):
+    def getVNF(self, id):
         if self.parsed == False:
             self.parse_data()
         vertices = self.json_data['vertices']
         for vertex in vertices:
             if vertex['id'] == id:
                 return vertex['info']['property']['vnf']
+    # Function used for retrieve vnf number for each vertices
+    def getTER(self, id):
+        if self.parsed == False:
+            self.parse_data()
+        vertices = self.json_data['vertices']
+        for vertex in vertices:
+            if vertex['id'] == id:
+                return vertex['info']['property']['ter']
 
     # Parses topology advanced options
     def load_advanced(self):
         if self.verbose:
             print "*** Retrieve Advanced Option"
         advanced_options = self.json_data['graph_parameters'] if 'graph_parameters' in self.json_data else []
+        if 'tunneling' not in advanced_options:
+            print "Error No Tunneling Data"
+            sys.exit(-2)
+        self.tunneling = advanced_options['tunneling']
+        if self.tunneling == "":
+            self.tunneling = "VXLAN"
         if 'testbed' not in advanced_options:
             print "Error No Testbed Data"
             sys.exit(-2)
+        testbeds = ["MININET", "SOFTFIRE"]
         testbed = advanced_options['testbed']
-        if testbed != "MININET":
+        if testbed not in testbeds:
             print "%s Not Supported" % testbed
             sys.exit(-2)
         self.testbed = testbed
@@ -133,15 +148,15 @@ class Srv6TopoParser(TopoParser):
             curvproperty = vertices[vertex]['info']['property']
             if 'Server' in curvtype:
                 number = map(int, re.findall(r'\d+', vertex))
-                self.server.append('Server%s' % number[0])
-                self.server_properties.append(curvproperty)
+                self.servers.append('Server%s' % number[0])
+                self.servers_properties.append(curvproperty)
             elif 'Router' in curvtype:
                 number = map(int, re.findall(r'\d+', vertex))
-                self.router.append('Router%s' % number[0])
-                self.router_properties.append(curvproperty)
+                self.routers.append('Router%s' % number[0])
+                self.routers_properties.append(curvproperty)
         if self.verbose:
-            print "*** Server:", self.server
-            print "*** Router:", self.router
+            print "*** Servers:", self.servers
+            print "*** Routers:", self.routers
 
     def load_vertex_v2(self):
         if self.verbose:
@@ -151,14 +166,14 @@ class Srv6TopoParser(TopoParser):
             curvtype = vertex['info']['type']
             curvproperty = vertex['info']['property']
             if 'Server' in curvtype:
-                self.server.append(str(vertex['id']))
-                self.server_properties.append(curvproperty)
+                self.servers.append(str(vertex['id']))
+                self.servers_properties.append(curvproperty)
             elif 'Router' in curvtype:
-                self.router.append(str(vertex['id']))
-                self.router_properties.append(curvproperty)
+                self.routers.append(str(vertex['id']))
+                self.routers_properties.append(curvproperty)
         if self.verbose:
-            print "*** Server:", self.server
-            print "*** Router:", self.router
+            print "*** Servers:", self.servers
+            print "*** Routers:", self.routers
 
     # Parses edge_links from json_data
     def load_edge_links(self):
@@ -166,10 +181,10 @@ class Srv6TopoParser(TopoParser):
             print "*** Retrieve Edge Links"
         edges = self.json_data['edges']
         for edge in edges:
-            if edge['source'] in self.server or edge['target'] in self.server:
+            if edge['source'] in self.servers or edge['target'] in self.servers:
                     self.edge_links.append((str(edge['source']), str(edge['target'])))
         for edge_link in self.edge_links:
-            if edge_link[0] not in self.router and edge_link[1] not in self.server:
+            if edge_link[0] not in self.routers and edge_link[1] not in self.servers:
                 print "Error: malformed topology"
                 sys.exit(-2)
         if self.verbose:
@@ -181,7 +196,7 @@ class Srv6TopoParser(TopoParser):
             print "*** Retrieve Core Links"
         edges = self.json_data['edges']
         for edge in edges:
-            if edge['source'] in self.router and edge['target'] in self.router:
+            if edge['source'] in self.routers and edge['target'] in self.routers:
                 self.core_links.append((str(edge['source']), str(edge['target'])))
         if self.verbose:
             print "*** Corelinks:", self.core_links
@@ -189,6 +204,19 @@ class Srv6TopoParser(TopoParser):
 
 if __name__ == '__main__':
 
-    parser = Srv6TopoParser("example_srv6_topology.json", verbose=True, version=2)
+    parser = SRv6TopoParser("example_srv6_topology.json", verbose=True, version=2)
     parser.parse_data()
+    print "*** Nodes:"
+    for router, router_property in zip(parser.routers, parser.routers_properties):
+        print "*** Router: %s - Property: %s" % (router, router_property)
+    for server, server_property in zip(parser.servers, parser.servers_properties):
+        print "*** Server: %s - Property: %s" % (server, server_property)
+    print "*** Core Links"
+    for core_link in parser.core_links:
+        print "*** Core Link:", core_link
+    print "*** Edge Links"
+    for edge_link in parser.edge_links:
+        print "*** Edge Link:", edge_link
+    print "*** Tunneling", parser.tunneling
+    print "*** Testbed", parser.testbed
 

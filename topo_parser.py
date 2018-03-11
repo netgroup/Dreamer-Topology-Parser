@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 ##############################################################################################
 # Copyright (C) 2014 Pier Luigi Ventre - (Consortium GARR and University of Rome "Tor Vergata")
 # Copyright (C) 2014 Giuseppe Siracusano, Stefano Salsano - (CNIT and University of Rome "Tor Vergata")
@@ -23,9 +25,6 @@
 # @author Stefano Salsano <stefano.salsano@uniroma2.it>
 #
 #
-
-# !/usr/bin/python
-
 
 import os
 import json
@@ -122,7 +121,7 @@ class TopoParser:
         if 'testbed' not in advanced_options:
             print "Error No Testbed Data"
             sys.exit(-2)
-        testbeds = ["OFELIA", "GOFF", "GTS", "MININET"]
+        testbeds = ["OFELIA", "GOFF", "GTS", "MININET", "SOFTFIRE"]
         testbed = advanced_options['testbed']
         if testbed not in testbeds:
             print "%s Not Supported" % testbed
