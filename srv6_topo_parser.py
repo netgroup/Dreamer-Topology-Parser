@@ -38,7 +38,7 @@ class SRv6TopoParser(TopoParser):
     path = ""
 
     # Init Function, load json_data from path_json
-    def __init__(self, path_json, verbose=False, version=2):
+    def __init__(self, path_json, openbaton_path_json, verbose=False, version=2):
         self.verbose = verbose
         self.version = int(version)
         self.servers = []
@@ -51,11 +51,9 @@ class SRv6TopoParser(TopoParser):
         self.core_links = []
         self.core_links_properties = []
 
-        self.ovnf_netns_dict = {}
-        self.ovnf_lxdcont_dict = {}
-        self.term_netns_dict = {}
-        self.term_lxdcont_dict = {}
+        self.vnf_term_dict = {}
 
+        self.ip_addr_map = {}
    
         self.parsed = False
 
@@ -71,6 +69,17 @@ class SRv6TopoParser(TopoParser):
         if self.verbose:
             print "*** JSON Data Loaded:"
             # print json.dumps(self.json_data, sort_keys=True, indent=4)
+
+        self.ob_json_data = {}
+        openbaton_path_json = self.path + openbaton_path_json
+        if os.path.exists(path_json) == False:
+            print "Openbaton Json File %s Not Found" % openbaton_path_json
+        
+        else:
+            ob_json_file = open(openbaton_path_json)
+            self.ob_json_data = json.load(ob_json_file)
+            ob_json_file.close()
+
 
     # Parse Function, first retrieves the vertices from json data,
     # second retrieves the links from json data
@@ -186,21 +195,22 @@ class SRv6TopoParser(TopoParser):
                 self.routers_properties.append(curvproperty)
                 self.routers_dict[str(vertex['id'])]=curvproperty
             elif 'ovnf_netns' in curvtype:
-                self.ovnf_netns_dict[str(vertex['id'])]=curvproperty
+                self.vnf_term_dict[str(vertex['id'])]=curvproperty
+                self.vnf_term_dict[str(vertex['id'])]['type']='ovnf_netns'
             elif 'ovnf_lxdcont' in curvtype:
-                self.ovnf_lxdcont_dict[str(vertex['id'])]=curvproperty
+                self.vnf_term_dict[str(vertex['id'])]=curvproperty
+                self.vnf_term_dict[str(vertex['id'])]['type']='ovnf_lxdcont'
             elif 'term_netns' in curvtype:
-                self.term_netns_dict[str(vertex['id'])]=curvproperty
+                self.vnf_term_dict[str(vertex['id'])]=curvproperty
+                self.vnf_term_dict[str(vertex['id'])]['type']='term_netns'
             elif 'term_lxdcont' in curvtype:
-                self.term_lxdcont_dict[str(vertex['id'])]=curvproperty
+                self.vnf_term_dict[str(vertex['id'])]=curvproperty
+                self.vnf_term_dict[str(vertex['id'])]['type']='term_lxdcont'
         if self.verbose:
             print "*** Servers:", self.servers
             print "*** Routers:", self.routers
             print "*** Routers dict:", self.routers_dict
-            print "*** ovnf_netns:", self.ovnf_netns_dict
-            print "*** ovnf_lxdcont:", self.ovnf_lxdcont_dict
-            print "*** term_netns:", self.term_netns_dict
-            print "*** term_lxdcont:", self.term_lxdcont_dict
+            print "*** vnf_term_dict:", self.vnf_term_dict
 
     # Parses edge_links from json_data
     def load_edge_links(self):
@@ -227,10 +237,6 @@ class SRv6TopoParser(TopoParser):
                 self.core_links.append((str(edge['source']), str(edge['target'])))
         if self.verbose:
             print "*** Corelinks:", self.core_links
-            print "*** ovnf_netns:", self.ovnf_netns_dict
-            print "*** ovnf_lxdcont:", self.ovnf_lxdcont_dict
-            print "*** term_netns:", self.term_netns_dict
-            print "*** term_lxdcont:", self.term_lxdcont_dict
 
     # Parses vnfs and terms from json_data
     # needs to be called after load_vertex
@@ -241,27 +247,39 @@ class SRv6TopoParser(TopoParser):
         for edge in edges:
             myrouter = ""
             mynetns = ""
-            if (edge['source'] in self.routers and edge['target'] in self.ovnf_netns_dict) :
-                myrouter = edge['source']
-                mynetns = edge['target']
-            if (edge['target'] in self.routers and edge['source'] in self.ovnf_netns_dict) :
-                myrouter = edge['target']
-                mynetns = edge['source']
+            if (edge['source'] in self.routers and edge['target'] in self.vnf_term_dict):
+                myrouter = str(edge['source'])
+                mynetns = str(edge['target'])
+            if (edge['target'] in self.routers and edge['source'] in self.vnf_term_dict) :
+                myrouter = str(edge['target'])
+                mynetns = str(edge['source'])
             if myrouter != "" :  
                 if 'vnfs' in self.routers_dict[myrouter] :
-                    self.routers_dict[myrouter]['vnfs'][mynetns]=self.ovnf_netns_dict[mynetns]
+                    self.routers_dict[myrouter]['vnfs'][mynetns]=self.vnf_term_dict[mynetns]
                 else :
-                    self.routers_dict[myrouter].update({'vnfs':{mynetns:self.ovnf_netns_dict[mynetns]}})
+                    self.routers_dict[myrouter].update({'vnfs':{mynetns:self.vnf_term_dict[mynetns]}})
+        if self.verbose:
+            print "*** Routers dict updated:", self.routers_dict
 
     def load_openbaton(self):
-        return
+        if self.ob_json_data != {} :
+            for myvnf in self.ob_json_data ['payload']['vnfr']:
+                #print "\n**********"
+                #print myvnf['name']
+                #print myvnf['vdu'][0]['vnfc_instance'][0]['ips'][0]['ip']
+                #print myvnf['vdu'][0]['vnfc_instance'][0]['floatingIps'][0]['ip']
+                ip_dict = {}
+                ip_dict.update({'internal_ip':str(myvnf['vdu'][0]['vnfc_instance'][0]['ips'][0]['ip'])})
+                ip_dict.update({'floating_ip':str(myvnf['vdu'][0]['vnfc_instance'][0]['floatingIps'][0]['ip'])})
+                self.ip_addr_map[str(myvnf['name'])]=ip_dict
+        if self.verbose:
+            print "*** IP address map: \n", self.ip_addr_map
 
-
-
+        
 if __name__ == '__main__':
 
     #parser = SRv6TopoParser("example_srv6_topology.json", verbose=True, version=2)
-    parser = SRv6TopoParser("example_lombardo.json", verbose=True, version=2)
+    parser = SRv6TopoParser("example_lombardo.json", "openbaton_notification.json", verbose=True, version=2)
     parser.parse_data()
     print "*** Nodes:"
     for router, router_property in zip(parser.routers, parser.routers_properties):
