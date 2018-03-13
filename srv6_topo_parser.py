@@ -45,10 +45,18 @@ class SRv6TopoParser(TopoParser):
         self.servers_properties = []
         self.routers = []
         self.routers_properties = []
+        self.routers_dict = {}
         self.edge_links = []
         self.edge_links_properties = []
         self.core_links = []
         self.core_links_properties = []
+
+        self.ovnf_netns_dict = {}
+        self.ovnf_lxdcont_dict = {}
+        self.term_netns_dict = {}
+        self.term_lxdcont_dict = {}
+
+   
         self.parsed = False
 
         if self.verbose:
@@ -71,6 +79,10 @@ class SRv6TopoParser(TopoParser):
         self.load_vertex()
         self.load_edge_links()
         self.load_core_links()
+        self.load_vnfs_and_terms()
+
+        self.load_openbaton()
+
         self.parsed = True
 
     # Function used for retrieve routers from json data
@@ -97,7 +109,7 @@ class SRv6TopoParser(TopoParser):
             self.parse_data()
         return self.core_links
 
-    # Function used for retrieve vnf number for each vertices
+    # Function used for retrieve vnf number for each vertex
     def getVNF(self, id):
         if self.parsed == False:
             self.parse_data()
@@ -164,16 +176,31 @@ class SRv6TopoParser(TopoParser):
         vertices = self.json_data['vertices']
         for vertex in vertices:
             curvtype = vertex['info']['type']
-            curvproperty = vertex['info']['property']
+            #curvproperty = vertex['info']['property']
+            curvproperty = vertex['info'].get('property', {})
             if 'Server' in curvtype:
                 self.servers.append(str(vertex['id']))
                 self.servers_properties.append(curvproperty)
-            elif 'Router' in curvtype:
+            elif 'VM' in curvtype:
                 self.routers.append(str(vertex['id']))
                 self.routers_properties.append(curvproperty)
+                self.routers_dict[str(vertex['id'])]=curvproperty
+            elif 'ovnf_netns' in curvtype:
+                self.ovnf_netns_dict[str(vertex['id'])]=curvproperty
+            elif 'ovnf_lxdcont' in curvtype:
+                self.ovnf_lxdcont_dict[str(vertex['id'])]=curvproperty
+            elif 'term_netns' in curvtype:
+                self.term_netns_dict[str(vertex['id'])]=curvproperty
+            elif 'term_lxdcont' in curvtype:
+                self.term_lxdcont_dict[str(vertex['id'])]=curvproperty
         if self.verbose:
             print "*** Servers:", self.servers
             print "*** Routers:", self.routers
+            print "*** Routers dict:", self.routers_dict
+            print "*** ovnf_netns:", self.ovnf_netns_dict
+            print "*** ovnf_lxdcont:", self.ovnf_lxdcont_dict
+            print "*** term_netns:", self.term_netns_dict
+            print "*** term_lxdcont:", self.term_lxdcont_dict
 
     # Parses edge_links from json_data
     def load_edge_links(self):
@@ -200,11 +227,41 @@ class SRv6TopoParser(TopoParser):
                 self.core_links.append((str(edge['source']), str(edge['target'])))
         if self.verbose:
             print "*** Corelinks:", self.core_links
+            print "*** ovnf_netns:", self.ovnf_netns_dict
+            print "*** ovnf_lxdcont:", self.ovnf_lxdcont_dict
+            print "*** term_netns:", self.term_netns_dict
+            print "*** term_lxdcont:", self.term_lxdcont_dict
+
+    # Parses vnfs and terms from json_data
+    # needs to be called after load_vertex
+    def load_vnfs_and_terms(self):
+        if self.verbose:
+            print "*** Retrieve Vnfs and Terms"
+        edges = self.json_data['edges']
+        for edge in edges:
+            myrouter = ""
+            mynetns = ""
+            if (edge['source'] in self.routers and edge['target'] in self.ovnf_netns_dict) :
+                myrouter = edge['source']
+                mynetns = edge['target']
+            if (edge['target'] in self.routers and edge['source'] in self.ovnf_netns_dict) :
+                myrouter = edge['target']
+                mynetns = edge['source']
+            if myrouter != "" :  
+                if 'vnfs' in self.routers_dict[myrouter] :
+                    self.routers_dict[myrouter]['vnfs'][mynetns]=self.ovnf_netns_dict[mynetns]
+                else :
+                    self.routers_dict[myrouter].update({'vnfs':{mynetns:self.ovnf_netns_dict[mynetns]}})
+
+    def load_openbaton(self):
+        return
+
 
 
 if __name__ == '__main__':
 
-    parser = SRv6TopoParser("example_srv6_topology.json", verbose=True, version=2)
+    #parser = SRv6TopoParser("example_srv6_topology.json", verbose=True, version=2)
+    parser = SRv6TopoParser("example_lombardo.json", verbose=True, version=2)
     parser.parse_data()
     print "*** Nodes:"
     for router, router_property in zip(parser.routers, parser.routers_properties):
