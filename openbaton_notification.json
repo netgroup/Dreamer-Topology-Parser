@@ -7,9 +7,9 @@
       "vnf_dependency":[
          {
             "idType":{
-               "VNFads1":"ads1"
+               "ads1":"ads1"
             },
-            "target":"VNFads2",
+            "target":"ads2",
             "parameters":{
                "ads1":{
                   "shared":false,
@@ -50,7 +50,7 @@
                         },
                         "id":"910189f6-bd1d-4fb9-9672-13d0a3e103d1",
                         "parameters":{
-                           "softfire-internal":"192.168.213.4"
+                           "softfire-internal":"192.168.213.5"
                         },
                         "hbVersion":10
                      }
@@ -67,10 +67,10 @@
          },
          {
             "idType":{
-               "VNFads2":"ads2",
-               "VNFads1":"ads1"
+               "ads2":"ads2",
+               "ads1":"ads1"
             },
-            "target":"VNFsurrey1",
+            "target":"surrey1",
             "parameters":{
                "ads2":{
                   "shared":false,
@@ -112,7 +112,7 @@
                         },
                         "id":"8c165dc4-0fb5-4ff9-8222-c245e1bd5b1c",
                         "parameters":{
-                           "softfire-internal":"192.168.213.15"
+                           "softfire-internal":"192.168.213.9"
                         },
                         "hbVersion":12
                      }
@@ -133,7 +133,7 @@
                         },
                         "id":"22eae08c-66f9-4a5c-94e7-820f5eefb356",
                         "parameters":{
-                           "softfire-internal":"192.168.213.4"
+                           "softfire-internal":"192.168.213.5"
                         },
                         "hbVersion":10
                      }
@@ -150,9 +150,9 @@
          },
          {
             "idType":{
-               "VNFsurrey1":"surrey1"
+               "surrey1":"surrey1"
             },
-            "target":"VNFsurrey2",
+            "target":"surrey2",
             "parameters":{
                "surrey1":{
                   "shared":false,
@@ -193,7 +193,7 @@
                         },
                         "id":"2669a276-1bc3-4fda-8c44-153fb6b61479",
                         "parameters":{
-                           "softfire-internal":"192.168.18.44"
+                           "softfire-internal":"192.168.18.12"
                         },
                         "hbVersion":14
                      }
@@ -323,7 +323,7 @@
                   ],
                   "name":"VDUsurrey2",
                   "projectId":"9922f5e2-4ead-48d3-b2df-5e9447ceb868",
-                  "hostname":"VNFsurrey2",
+                  "hostname":"surrey2",
                   "id":"1fa619af-20d3-4f0b-8e89-d2939287dc8b",
                   "parent_vdu":"7a1a58a8-920b-4da7-8db0-29abf9207401",
                   "vm_image":[
@@ -357,13 +357,13 @@
                            "hbVersion":7
                         },
                         "vim_id":"c107bb1a-b377-4655-90e0-32417934bf51",
-                        "hostname":"VNFsurrey2-9375962",
+                        "hostname":"surrey2-9375962",
                         "metadata":{
 
                         },
                         "ips":[
                            {
-                              "ip":"192.168.18.9",
+                              "ip":"192.168.18.18",
                               "netName":"softfire-internal",
                               "shared":false,
                               "hbVersion":1,
@@ -379,7 +379,7 @@
                         "connection_point":[
                            {
                               "interfaceId":0,
-                              "floatingIp":"172.20.18.196",
+                              "floatingIp":"172.20.18.189",
                               "virtual_link_reference":"softfire-internal",
                               "shared":false,
                               "metadata":{
@@ -393,7 +393,7 @@
                         "id":"68afe6b5-94af-455a-873f-f236ea2a13cb",
                         "floatingIps":[
                            {
-                              "ip":"172.20.18.196",
+                              "ip":"172.20.18.189",
                               "netName":"softfire-internal",
                               "shared":false,
                               "hbVersion":1,
@@ -415,9 +415,9 @@
                   "hbVersion":5
                }
             ],
-            "name":"VNFsurrey2",
+            "name":"surrey2",
             "vnf_address":[
-               "192.168.18.9"
+               "192.168.18.18"
             ],
             "lifecycle_event_history":[
                {
@@ -628,7 +628,7 @@
                   ],
                   "name":"VDUads2",
                   "projectId":"9922f5e2-4ead-48d3-b2df-5e9447ceb868",
-                  "hostname":"VNFads2",
+                  "hostname":"ads2",
                   "id":"5401eaf0-2c83-4dae-92e8-a82897c16f97",
                   "parent_vdu":"f20e9136-fccf-4e10-99f1-f4963c82ba2e",
                   "vm_image":[
@@ -662,13 +662,13 @@
                            "hbVersion":7
                         },
                         "vim_id":"e1c049a4-c3ad-4cd9-8ae3-36bba7442ac6",
-                        "hostname":"VNFads2-7986892",
+                        "hostname":"ads2-7986892",
                         "metadata":{
 
                         },
                         "ips":[
                            {
-                              "ip":"192.168.213.15",
+                              "ip":"192.168.213.9",
                               "netName":"softfire-internal",
                               "shared":false,
                               "hbVersion":1,
@@ -684,7 +684,7 @@
                         "connection_point":[
                            {
                               "interfaceId":0,
-                              "floatingIp":"172.20.70.65",
+                              "floatingIp":"172.20.70.7",
                               "virtual_link_reference":"softfire-internal",
                               "shared":false,
                               "metadata":{
@@ -698,7 +698,7 @@
                         "id":"7dfa744b-09bc-4a55-84c3-8d018c303d3e",
                         "floatingIps":[
                            {
-                              "ip":"172.20.70.65",
+                              "ip":"172.20.70.7",
                               "netName":"softfire-internal",
                               "shared":false,
                               "hbVersion":1,
@@ -720,9 +720,9 @@
                   "hbVersion":5
                }
             ],
-            "name":"VNFads2",
+            "name":"ads2",
             "vnf_address":[
-               "192.168.213.15"
+               "192.168.213.9"
             ],
             "lifecycle_event_history":[
                {
@@ -933,7 +933,7 @@
                   ],
                   "name":"VDUsurrey1",
                   "projectId":"9922f5e2-4ead-48d3-b2df-5e9447ceb868",
-                  "hostname":"VNFsurrey1",
+                  "hostname":"surrey1",
                   "id":"5dd47d92-0877-4407-8b0f-e0ff67e2bdbe",
                   "parent_vdu":"29f06f68-6902-4bdb-ba8b-0859262db86b",
                   "vm_image":[
@@ -967,13 +967,13 @@
                            "hbVersion":7
                         },
                         "vim_id":"c107bb1a-b377-4655-90e0-32417934bf51",
-                        "hostname":"VNFsurrey1-8795701",
+                        "hostname":"surrey1-8795701",
                         "metadata":{
 
                         },
                         "ips":[
                            {
-                              "ip":"192.168.18.44",
+                              "ip":"192.168.18.12",
                               "netName":"softfire-internal",
                               "shared":false,
                               "hbVersion":1,
@@ -989,7 +989,7 @@
                         "connection_point":[
                            {
                               "interfaceId":0,
-                              "floatingIp":"172.20.18.187",
+                              "floatingIp":"172.20.18.183",
                               "virtual_link_reference":"softfire-internal",
                               "shared":false,
                               "metadata":{
@@ -1003,7 +1003,7 @@
                         "id":"cff52c10-f8e1-403e-beb6-a580cf164325",
                         "floatingIps":[
                            {
-                              "ip":"172.20.18.187",
+                              "ip":"172.20.18.183",
                               "netName":"softfire-internal",
                               "shared":false,
                               "hbVersion":1,
@@ -1025,9 +1025,9 @@
                   "hbVersion":5
                }
             ],
-            "name":"VNFsurrey1",
+            "name":"surrey1",
             "vnf_address":[
-               "192.168.18.44"
+               "192.168.18.12"
             ],
             "lifecycle_event_history":[
                {
@@ -1238,7 +1238,7 @@
                   ],
                   "name":"VDUads1",
                   "projectId":"9922f5e2-4ead-48d3-b2df-5e9447ceb868",
-                  "hostname":"VNFads1",
+                  "hostname":"ads1",
                   "id":"aa1e5a31-404d-45a2-9d4a-6af35e8757af",
                   "parent_vdu":"0d66fb76-03f5-4eef-bfce-41ce51aa5003",
                   "vm_image":[
@@ -1272,13 +1272,13 @@
                            "hbVersion":6
                         },
                         "vim_id":"e1c049a4-c3ad-4cd9-8ae3-36bba7442ac6",
-                        "hostname":"VNFads1-6464166",
+                        "hostname":"ads1-6464166",
                         "metadata":{
 
                         },
                         "ips":[
                            {
-                              "ip":"192.168.213.4",
+                              "ip":"192.168.213.5",
                               "netName":"softfire-internal",
                               "shared":false,
                               "hbVersion":2,
@@ -1294,7 +1294,7 @@
                         "connection_point":[
                            {
                               "interfaceId":0,
-                              "floatingIp":"172.20.70.53",
+                              "floatingIp":"172.20.70.42",
                               "virtual_link_reference":"softfire-internal",
                               "shared":false,
                               "metadata":{
@@ -1308,7 +1308,7 @@
                         "id":"a85a65b0-d0a6-4624-95a6-5dc120f8c75e",
                         "floatingIps":[
                            {
-                              "ip":"172.20.70.53",
+                              "ip":"172.20.70.42",
                               "netName":"softfire-internal",
                               "shared":false,
                               "hbVersion":2,
@@ -1330,9 +1330,9 @@
                   "hbVersion":4
                }
             ],
-            "name":"VNFads1",
+            "name":"ads1",
             "vnf_address":[
-               "192.168.213.4"
+               "192.168.213.5"
             ],
             "lifecycle_event_history":[
                {
