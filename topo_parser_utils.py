@@ -23,8 +23,7 @@
 # @author Pier Luigi Ventre <pl.ventre@gmail.com>
 # @author Giuseppe Siracusano <a_siracusano@tin.it>
 # @author Stefano Salsano <stefano.salsano@uniroma2.it>
-#
-#
+
 class Subnet: 
 	def __init__(self, Type=None):
 		self.nodes = []
@@ -35,5 +34,4 @@ class Subnet:
 			self.nodes.append(link[0])
 		if link[1] not in self.nodes:
 			self.nodes.append(link[1])
-		#if link not in self.links:
 		self.links.append(link)
