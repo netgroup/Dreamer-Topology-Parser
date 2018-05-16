@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 ##############################################################################################
 # Copyright (C) 2014 Pier Luigi Ventre - (Consortium GARR and University of Rome "Tor Vergata")
 # Copyright (C) 2014 Giuseppe Siracusano, Stefano Salsano - (CNIT and University of Rome "Tor Vergata")
@@ -21,11 +23,6 @@
 # @author Pier Luigi Ventre <pl.ventre@gmail.com>
 # @author Giuseppe Siracusano <a_siracusano@tin.it>
 # @author Stefano Salsano <stefano.salsano@uniroma2.it>
-#
-#
-
-# !/usr/bin/python
-
 
 import os
 import json
@@ -33,11 +30,12 @@ import sys
 from topo_parser_utils import Subnet
 import re
 
-
-class TopoParser:
+class TopoParser(object):
     path = ""
 
-    # Init Function, load json_data from path_json
+    """
+    Init Function, load json_data from path_json
+    """
     def __init__(self, path_json, verbose=False, version=1):
         self.verbose = verbose
         self.version = int(version)
@@ -45,8 +43,6 @@ class TopoParser:
         self.cr_oshis_properties = []
         self.pe_oshis = []
         self.pe_oshis_properties = []
-        # self.l2sws = []
-        # self.l2sws_properties = []
         self.cers = []
         self.cers_properties = []
         self.ctrls = []
@@ -56,15 +52,14 @@ class TopoParser:
         self.vss = []
         self.l2vss = []
         self.pplinks = []
-        # self.l2links = []
         self.ppsubnets = []
-        # self.l2subnets = []
         self.subnetclass = Subnet
         self.generated = False
         self.parsed = False
         self.testbed = None
         self.mapped = False
         self.vlan = None
+
         if self.verbose:
             print "*** __init__: version topology format:", self.version
         path_json = self.path + path_json
@@ -76,11 +71,12 @@ class TopoParser:
         json_file.close()
         if self.verbose:
             print "*** JSON Data Loaded:"
-            # print json.dumps(self.json_data, sort_keys=True, indent=4)
+            print json.dumps(self.json_data, sort_keys=True, indent=4)
 
-    # Parse Function, first retrieves the vertices from json data,
-    # second retrieves the links from json data, finally create the
-    # PPsubnet
+    """
+    Parse Function, firstly it retrieves the vertices from json data,
+    then retrieves the links from json data, finally create the PPsubnet
+    """
     def parse_data(self):
         self.load_advanced()
         self.load_vertex()
@@ -122,7 +118,7 @@ class TopoParser:
         if 'testbed' not in advanced_options:
             print "Error No Testbed Data"
             sys.exit(-2)
-        testbeds = ["OFELIA", "GOFF", "GTS", "MININET"]
+        testbeds = ["OFELIA", "GOFF", "GTS", "MININET", "SOFTFIRE"]
         testbed = advanced_options['testbed']
         if testbed not in testbeds:
             print "%s Not Supported" % testbed
@@ -148,8 +144,11 @@ class TopoParser:
             print "Invalid VLAN Data"
             sys.exit(-2)
 
-    # Parses vertex from json_data, renames the node in 'vertices' and in 'edges',
-    # and divides them in: cr - oshi (Core Oshi), pe - oshi (Access Oshi), and cers (Customer Edge Router).
+    """
+    Parses vertex from json_data, renames the node in 'vertices' and in 'edges',
+    and divides them in: cr - oshi (Core Oshi), pe - oshi (Access Oshi) 
+    and cers (Customer Edge Router).
+    """
     def load_vertex(self):
         if self.version == 2:
             return self.load_vertex_v2()
@@ -160,8 +159,6 @@ class TopoParser:
 
             curvtype = vertices[vertex]['info']['type']
             curvproperty = vertices[vertex]['info']['property']
-            # r'cro\d+$'
-
 
             if 'OSHI-CR' in curvtype:
                 number = map(int, re.findall(r'\d+', vertex))
@@ -220,8 +217,6 @@ class TopoParser:
             print "*** CTRL:", self.ctrls
             print "*** VS:", self.l2vss
 
-    # Parses link from json_data
-    # TODO Parse Links Properties
     def load_vss(self):
         if self.version == 2:
             return self.load_vss_v2()
@@ -251,8 +246,6 @@ class TopoParser:
                     vs.append(str(edge['source']))
             self.vss.append(vs)
 
-    # Parses link from json_data
-    # TODO Parse Links Properties
     def load_links(self):
         if self.version == 2:
             return self.load_links_v2()
@@ -270,7 +263,6 @@ class TopoParser:
                     self.pplinks.append((vertids[0], vertids[1], link))
 
         if self.verbose:
-            # print "*** L2links:", self.l2links
             print "*** PPlinks:", self.pplinks
             print "*** VLLs:", self.vlls
 
@@ -287,15 +279,15 @@ class TopoParser:
                 self.pplinks.append((str(edge['source']), str(edge['target']), edge))
 
         if self.verbose:
-            # print "*** L2links:", self.l2links
             print "*** PPlinks:", self.pplinks
             print "*** VLLs:", self.vlls
 
-    # From the parsed Links, creates the associates Subnet
+    """
+    From the parsed Links, creates the associates Subnet
+    """
     def create_subnet(self):
         # Creates the ppsubnets
         for pplink in self.pplinks:
-            # print pplink
             s = self.subnetclass()
             s.appendLink(pplink)
             self.ppsubnets.append(s)
@@ -308,42 +300,8 @@ class TopoParser:
                 print "*** PP Subnet(%s): Nodes %s - Links %s" % (i + 1, subnet.nodes, subnet.links)
                 i = i + 1
 
-        """
-        if self.verbose:
-            i = 0
-            print "*** Subnets:"
-            for subnet in self.l2subnets:
-                print "*** L2 Subnet(%s): Nodes %s - Links %s" %(i + 1, subnet.nodes, subnet.links)
-                i = i + 1
-        """
-
-    # Utility Function, provides node's next hop and links (to the nexthop)
-    # we use it to rebuild from scratch a l2subnets, XXX it deletes the l2links
-    # once we rebuild the subnet
-    """
-    def getNextHopAndLinks(self,node):
-        ret_links = []
-        ret_node = []
-        tmp = []
-        if 'cer' in node or 'peo' in node or 'cro' in node:
-            return ([],[])
-        for link in self.l2links:
-            if link[0] == node or link[1] == node:
-                ret_links.append(link)
-                if link[0] == node:
-                    ret_node.append(link[1])
-                if link[1] == node:
-                    ret_node.append(link[0])
-                tmp.append(link)
-        for link in tmp:
-            self.l2links.remove(link)
-        return (ret_node, ret_links)
-    """
-
-
 if __name__ == '__main__':
-
-    parser = TopoParser("example1_new_format.json", verbose=True, version=2)
+    parser = TopoParser("example/example_dreamer_topology.json", verbose=False, version=2)
     ppsubnets = parser.getsubnets()
     print "*** Nodes:"
     for cr, cr_property in zip(parser.cr_oshis, parser.cr_oshis_properties):
