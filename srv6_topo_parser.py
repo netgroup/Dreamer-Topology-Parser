@@ -21,7 +21,7 @@
 #
 # Topology Parser for Segment Routing IPv6
 #
-# @author Pier Luigi Ventre <pl.ventre@gmail.com>
+# @author Pier Luigi Ventre <pierventre@hotmail.com>
 # @author Stefano Salsano <stefano.salsano@uniroma2.it>
 # @author Alessandro Masci <mascialessandro89@gmail.com>
 
