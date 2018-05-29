@@ -20,7 +20,7 @@
 #
 # Topology Parser Utils.
 #
-# @author Pier Luigi Ventre <pl.ventre@gmail.com>
+# @author Pier Luigi Ventre <pierventre@hotmail.com>
 # @author Giuseppe Siracusano <a_siracusano@tin.it>
 # @author Stefano Salsano <stefano.salsano@uniroma2.it>
 
